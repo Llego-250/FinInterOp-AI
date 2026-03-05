@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { motion } from 'motion/react';
 import { Activity, TrendingUp, AlertTriangle } from 'lucide-react';
+import { TransactionFlowGraph } from '../components/visualization/TransactionFlowGraph';
 
 const data = [
   { name: 'Mon', transactions: 4000, risk: 2400, amt: 2400 },
@@ -43,6 +44,15 @@ export function Visualization() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 3D Transaction Flow Graph */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="col-span-1 lg:col-span-2 p-6 bg-black/40 border border-white/10 rounded-xl backdrop-blur-sm h-[600px] relative"
+        >
+          <TransactionFlowGraph />
+        </motion.div>
+
         {/* Transaction Volume Chart */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
