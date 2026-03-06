@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import React from 'react';
+import { cn } from '../../lib/utils';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,8 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, activeModule, onModuleSelect }: AppLayoutProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-cyan-500/30">
       {/* Background Effects */}
@@ -22,9 +25,17 @@ export function AppLayout({ children, activeModule, onModuleSelect }: AppLayoutP
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)]" />
       </div>
 
-      <Sidebar activeModule={activeModule} onModuleSelect={onModuleSelect} />
+      <Sidebar 
+        activeModule={activeModule} 
+        onModuleSelect={onModuleSelect} 
+        isCollapsed={isCollapsed}
+        toggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      />
 
-      <main className="pl-64 min-h-screen relative z-10">
+      <main className={cn(
+        "min-h-screen relative z-10 transition-all duration-300 ease-in-out",
+        isCollapsed ? "pl-20" : "pl-64"
+      )}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeModule}
