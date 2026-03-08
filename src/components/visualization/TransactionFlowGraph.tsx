@@ -10,6 +10,7 @@ interface GraphNode {
   val: number;
   name: string;
   color?: string;
+  img?: string;
 }
 
 interface GraphLink {
@@ -33,14 +34,14 @@ export function TransactionFlowGraph() {
   // Generate mock data for the financial ecosystem
   const data: GraphData = useMemo(() => {
     const nodes: GraphNode[] = [
-      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700' }, // Gold
-      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff' }, // Cyan
-      { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff' },
-      { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff' },
-      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff' }, // Purple
-      { id: 'airtel_money', group: 3, val: 12, name: 'Airtel Money', color: '#7000ff' },
-      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c' }, // Red
-      { id: 'visa_gateway', group: 4, val: 8, name: 'Visa Gateway', color: '#ff003c' },
+      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: 'https://logo.clearbit.com/bnr.rw' }, // Gold
+      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: 'https://logo.clearbit.com/bk.rw' }, // Cyan
+      { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff', img: 'https://logo.clearbit.com/equitygroupholdings.com' },
+      { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff', img: 'https://logo.clearbit.com/imbankgroup.com' },
+      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: 'https://logo.clearbit.com/mtn.com' }, // Purple
+      { id: 'airtel_money', group: 3, val: 12, name: 'Airtel Money', color: '#7000ff', img: 'https://logo.clearbit.com/airtel.com' },
+      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c', img: 'https://logo.clearbit.com/rswitch.co.rw' }, // Red
+      { id: 'visa_gateway', group: 4, val: 8, name: 'Visa Gateway', color: '#ff003c', img: 'https://logo.clearbit.com/visa.com' },
     ];
 
     const links: GraphLink[] = [
@@ -106,7 +107,7 @@ export function TransactionFlowGraph() {
     
     fg.cameraPosition(
       { x: currentPos.x * 0.8, y: currentPos.y * 0.8, z: currentPos.z * 0.8 },
-      undefined,
+      { x: 0, y: 0, z: 0 },
       1000
     );
   }, []);
@@ -120,7 +121,7 @@ export function TransactionFlowGraph() {
 
     fg.cameraPosition(
       { x: currentPos.x * 1.2, y: currentPos.y * 1.2, z: currentPos.z * 1.2 },
-      undefined,
+      { x: 0, y: 0, z: 0 },
       1000
     );
   }, []);
@@ -201,18 +202,28 @@ export function TransactionFlowGraph() {
           if (!node) return new THREE.Object3D();
           const group = new THREE.Group();
           
-          // Main sphere
-          const geometry = new THREE.SphereGeometry(node.val || 1, 32, 32);
-          const material = new THREE.MeshLambertMaterial({ 
-            color: node.color || '#ffffff',
-            transparent: true,
-            opacity: 0.8
-          });
-          const sphere = new THREE.Mesh(geometry, material);
-          group.add(sphere);
+          if (node.img) {
+            // Render image sprite
+            const imgTexture = new THREE.TextureLoader().load(node.img);
+            imgTexture.colorSpace = THREE.SRGBColorSpace;
+            const material = new THREE.SpriteMaterial({ map: imgTexture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(node.val * 2.5, node.val * 2.5, 1);
+            group.add(sprite);
+          } else {
+            // Main sphere fallback
+            const geometry = new THREE.SphereGeometry(node.val || 1, 32, 32);
+            const material = new THREE.MeshLambertMaterial({ 
+              color: node.color || '#ffffff',
+              transparent: true,
+              opacity: 0.8
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            group.add(sphere);
+          }
 
           // Glow effect (outer sphere)
-          const glowGeometry = new THREE.SphereGeometry((node.val || 1) * 1.2, 32, 32);
+          const glowGeometry = new THREE.SphereGeometry((node.val || 1) * 1.4, 32, 32);
           const glowMaterial = new THREE.MeshBasicMaterial({
             color: node.color || '#ffffff',
             transparent: true,
