@@ -36,12 +36,12 @@ export function TransactionFlowGraph() {
     const nodes: GraphNode[] = [
       { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: 'https://logo.clearbit.com/bnr.rw' }, // Gold
       { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: 'https://logo.clearbit.com/bk.rw' }, // Cyan
-      { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff', img: 'https://logo.clearbit.com/equitygroupholdings.com' },
-      { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff', img: 'https://logo.clearbit.com/imbankgroup.com' },
-      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: 'https://logo.clearbit.com/mtn.com' }, // Purple
-      { id: 'airtel_money', group: 3, val: 12, name: 'Airtel Money', color: '#7000ff', img: 'https://logo.clearbit.com/airtel.com' },
-      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c', img: 'https://logo.clearbit.com/rswitch.co.rw' }, // Red
-      { id: 'visa_gateway', group: 4, val: 8, name: 'Visa Gateway', color: '#ff003c', img: 'https://logo.clearbit.com/visa.com' },
+      { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff', img: '/assets/download.jpg' },
+      { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff', img: '/assets/im-logo.png' },
+      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: '/assets/new-mtn-logo.jpg' }, // Purple
+      { id: 'airtel_money', group: 3, val: 12, name: 'Airtel Money', color: '#7000ff', img: '/assets/airtel.png' },
+      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c', img: '/assets/logo-dark.98ecfedb2da063a40260.webp' }, // Red
+      { id: 'visa_gateway', group: 4, val: 8, name: 'Visa Gateway', color: '#ff003c', img: '/assets/download.png' },
     ];
 
     const links: GraphLink[] = [
