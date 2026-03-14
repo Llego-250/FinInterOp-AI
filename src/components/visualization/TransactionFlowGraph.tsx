@@ -34,8 +34,8 @@ export function TransactionFlowGraph() {
   // Generate mock data for the financial ecosystem
   const data: GraphData = useMemo(() => {
     const nodes: GraphNode[] = [
-      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: 'https://logo.clearbit.com/bnr.rw' }, // Gold
-      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: 'https://logo.clearbit.com/bk.rw' }, // Cyan
+      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: '/assets/logo-dark-1.png' }, // Gold
+      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: '/assets/images.png' }, // Cyan
       { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff', img: '/assets/download.jpg' },
       { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff', img: '/assets/im-logo.png' },
       { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: '/assets/new-mtn-logo.jpg' }, // Purple
