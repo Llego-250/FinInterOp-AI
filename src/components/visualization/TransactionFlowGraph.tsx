@@ -87,12 +87,20 @@ export function TransactionFlowGraph() {
       // Check if fg is still valid
       if (!fg) return;
       
-      angleRef.current += 0.003;
-      const dist = 200;
-      fg.cameraPosition({
-        x: dist * Math.sin(angleRef.current),
-        z: dist * Math.cos(angleRef.current)
-      });
+      try {
+        const currentPos = fg.cameraPosition();
+        if (!currentPos || typeof currentPos.x === 'undefined') return;
+
+        angleRef.current += 0.003;
+        const dist = 200;
+        fg.cameraPosition({
+          x: dist * Math.sin(angleRef.current),
+          y: currentPos.y,
+          z: dist * Math.cos(angleRef.current)
+        });
+      } catch (e) {
+        console.warn("Camera position error:", e);
+      }
     }, 30);
 
     return () => clearInterval(interval);
