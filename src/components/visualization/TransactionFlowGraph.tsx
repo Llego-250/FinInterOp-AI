@@ -205,19 +205,21 @@ export function TransactionFlowGraph() {
           const color = node.color || '#ffffff';
           const scale = (node.val || 10) * 0.2;
 
-          // Materials
-          const buildingMaterial = new THREE.MeshPhongMaterial({ 
+          // Materials - using Lambert with emissive so they are visible even in low light
+          const buildingMaterial = new THREE.MeshLambertMaterial({ 
             color: color,
+            emissive: color,
+            emissiveIntensity: 0.4,
             transparent: true,
-            opacity: 0.9,
-            shininess: 60
+            opacity: 0.9
           });
 
-          const whiteMaterial = new THREE.MeshPhongMaterial({
+          const whiteMaterial = new THREE.MeshLambertMaterial({
             color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.4,
             transparent: true,
-            opacity: 0.95,
-            shininess: 80
+            opacity: 0.95
           });
 
           // 1. Base (Steps)
