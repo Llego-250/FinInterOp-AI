@@ -202,33 +202,102 @@ export function TransactionFlowGraph() {
           if (!node) return new THREE.Object3D();
           const group = new THREE.Group();
           
+          const color = node.color || '#ffffff';
+          const scale = (node.val || 10) * 0.2;
+
+          // Materials
+          const buildingMaterial = new THREE.MeshPhongMaterial({ 
+            color: color,
+            transparent: true,
+            opacity: 0.9,
+            shininess: 60
+          });
+
+          const whiteMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.95,
+            shininess: 80
+          });
+
+          // 1. Base (Steps)
+          const baseGeom1 = new THREE.BoxGeometry(14 * scale, 1 * scale, 12 * scale);
+          const base1 = new THREE.Mesh(baseGeom1, buildingMaterial);
+          base1.position.y = -4.5 * scale;
+          group.add(base1);
+
+          const baseGeom2 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
+          const base2 = new THREE.Mesh(baseGeom2, whiteMaterial);
+          base2.position.y = -3.5 * scale;
+          group.add(base2);
+
+          // 2. Main Building Body (Core)
+          const bodyGeom = new THREE.BoxGeometry(8 * scale, 6 * scale, 6 * scale);
+          const body = new THREE.Mesh(bodyGeom, buildingMaterial);
+          body.position.y = 0;
+          group.add(body);
+
+          // 3. Pillars
+          const pillarGeom = new THREE.CylinderGeometry(0.6 * scale, 0.6 * scale, 6 * scale, 16);
+          const pillarPositions = [
+            [-4.5, 0, 3.5], [0, 0, 3.5], [4.5, 0, 3.5], // Front
+            [-4.5, 0, -3.5], [0, 0, -3.5], [4.5, 0, -3.5], // Back
+            [-4.5, 0, 0], [4.5, 0, 0] // Sides
+          ];
+          
+          pillarPositions.forEach(pos => {
+            const pillar = new THREE.Mesh(pillarGeom, whiteMaterial);
+            pillar.position.set(pos[0] * scale, pos[1] * scale, pos[2] * scale);
+            group.add(pillar);
+          });
+
+          // 4. Roof
+          const roofGeom1 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
+          const roof1 = new THREE.Mesh(roofGeom1, whiteMaterial);
+          roof1.position.y = 3.5 * scale;
+          group.add(roof1);
+
+          const roofGeom2 = new THREE.BoxGeometry(14 * scale, 1.5 * scale, 12 * scale);
+          const roof2 = new THREE.Mesh(roofGeom2, buildingMaterial);
+          roof2.position.y = 4.75 * scale;
+          group.add(roof2);
+
+          // 5. Logo / Signage
           if (node.img) {
-            // Render image sprite
             const imgTexture = new THREE.TextureLoader().load(node.img);
             imgTexture.colorSpace = THREE.SRGBColorSpace;
-            const material = new THREE.SpriteMaterial({ map: imgTexture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(node.val * 2.5, node.val * 2.5, 1);
+            
+            // Create a billboard on top of the roof
+            const spriteMaterial = new THREE.SpriteMaterial({ map: imgTexture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(8 * scale, 8 * scale, 1);
+            sprite.position.y = 10 * scale; // Above the roof
             group.add(sprite);
+
+            // Add a white backing for the logo so it pops
+            const backingGeom = new THREE.BoxGeometry(8.5 * scale, 8.5 * scale, 0.5 * scale);
+            const backingMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const backing = new THREE.Mesh(backingGeom, backingMat);
+            backing.position.y = 10 * scale;
+            backing.position.z = -0.1 * scale;
+            group.add(backing);
           } else {
-            // Main sphere fallback
-            const geometry = new THREE.SphereGeometry(node.val || 1, 32, 32);
-            const material = new THREE.MeshLambertMaterial({ 
-              color: node.color || '#ffffff',
-              transparent: true,
-              opacity: 0.8
-            });
-            const sphere = new THREE.Mesh(geometry, material);
+            // Fallback if no image
+            const sphereGeom = new THREE.SphereGeometry(4 * scale, 32, 32);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: color });
+            const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+            sphere.position.y = 10 * scale;
             group.add(sphere);
           }
 
-          // Glow effect (outer sphere)
-          const glowGeometry = new THREE.SphereGeometry((node.val || 1) * 1.4, 32, 32);
+          // 6. Glow effect (outer sphere)
+          const glowGeometry = new THREE.SphereGeometry(16 * scale, 32, 32);
           const glowMaterial = new THREE.MeshBasicMaterial({
-            color: node.color || '#ffffff',
+            color: color,
             transparent: true,
-            opacity: 0.15,
-            side: THREE.BackSide
+            opacity: 0.1,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending
           });
           const glow = new THREE.Mesh(glowGeometry, glowMaterial);
           group.add(glow);
