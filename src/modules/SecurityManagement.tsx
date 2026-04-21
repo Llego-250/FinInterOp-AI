@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Lock, Key, Plus, Trash2, Copy, Check, ShieldAlert } from 'lucide-react';
+import { Lock, Key, Plus, Trash2, Copy, Check, ShieldAlert, Cpu, Activity, Server, Users, Eye } from 'lucide-react';
 
 export function SecurityManagement() {
   const [apiKeys, setApiKeys] = useState([
@@ -14,7 +14,7 @@ export function SecurityManagement() {
     const newKey = `sk_live_••••••••••••${Math.random().toString(36).substring(2, 6)}`;
     setApiKeys([{
       id: newId,
-      name: `New Integration Key ${apiKeys.length + 1}`,
+      name: `Integration Key ${apiKeys.length + 1}`,
       key: newKey,
       createdAt: new Date().toISOString().split('T')[0],
       lastUsed: 'Never',
@@ -32,119 +32,165 @@ export function SecurityManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-slate-500/20 rounded-xl border border-slate-500/30">
-          <Lock className="w-6 h-6 text-slate-400" />
+    <div className="space-y-6 text-[#e5e5e5]">
+      {/* Header */}
+      <div className="flex items-end justify-between border-b pb-4 border-[#262626]">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-[#111111] rounded border border-[#262626]">
+            <Lock className="w-8 h-8 text-[#f59e0b]" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight font-serif italic text-white leading-none">Access Control</h1>
+            <p className="text-xs uppercase font-mono tracking-widest text-[#a3a3a3] mt-2">Zero-Trust Security & API Management</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">User & Security Management</h1>
-          <p className="text-gray-400 mt-1">Role assignment, access control, and system integration.</p>
+        <div className="flex gap-4">
+          <div className="text-right">
+            <div className="text-3xl font-light font-mono text-[#00ff00]">Zero</div>
+            <div className="text-[10px] text-[#a3a3a3] uppercase tracking-widest">Breach Events</div>
+          </div>
+          <div className="text-right border-l border-[#262626] pl-4">
+            <div className="text-3xl font-light font-mono text-[#e5e5e5]">1,402</div>
+            <div className="text-[10px] text-[#a3a3a3] uppercase tracking-widest">Active Sessions</div>
+          </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Users</h2>
-            <p className="text-gray-400">User management goes here...</p>
+        {/* Left Column: Metrics & Alerts */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-[#111111] border border-[#262626] rounded-xl p-6">
+            <h3 className="text-[11px] font-mono uppercase tracking-widest text-[#a3a3a3] mb-6 border-b border-[#262626] pb-2">Threat Vector Monitor</h3>
+            <div className="space-y-4">
+              <div className="p-3 border-l-2 border-l-[#ff003c] bg-[#ff003c]/5">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-[10px] font-mono text-[#ff003c] uppercase">Brute Force Attempt</span>
+                  <span className="text-[10px] text-[#a3a3a3] font-mono">10m ago</span>
+                </div>
+                <p className="text-xs text-[#d4d4d4]">Multiple failed logins from 192.168.1.45 blocked.</p>
+              </div>
+              <div className="p-3 border-l-2 border-l-[#f59e0b] bg-[#f59e0b]/5">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-[10px] font-mono text-[#f59e0b] uppercase">Privilege Escalation</span>
+                  <span className="text-[10px] text-[#a3a3a3] font-mono">1h ago</span>
+                </div>
+                <p className="text-xs text-[#d4d4d4]">Analyst_01 attempted access to restricted namespace.</p>
+              </div>
+              <div className="p-3 border-l-2 border-l-[#00f0ff] bg-[#00f0ff]/5">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-[10px] font-mono text-[#00f0ff] uppercase">New IAM Role</span>
+                  <span className="text-[10px] text-[#a3a3a3] font-mono">3h ago</span>
+                </div>
+                <p className="text-xs text-[#d4d4d4]">Role 'Cross-Border Auditor' provisioned successfully.</p>
+              </div>
+            </div>
           </div>
 
-          {/* API Key Management Section */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                  <Key className="w-5 h-5 text-cyan-400" />
-                  API Key Management
-                </h2>
-                <p className="text-sm text-gray-400 mt-1">Manage API keys for system-to-system integration.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#111111] border border-[#262626] rounded-lg p-4 flex flex-col justify-between h-24">
+              <span className="text-[10px] font-mono uppercase text-[#737373]">F-140-3 Node</span>
+              <div className="flex items-end justify-between">
+                <span className="text-2xl font-light font-mono text-white">4</span>
+                <Server className="w-4 h-4 text-[#404040]" />
+              </div>
+            </div>
+            <div className="bg-[#111111] border border-[#262626] rounded-lg p-4 flex flex-col justify-between h-24">
+              <span className="text-[10px] font-mono uppercase text-[#737373]">Audit Logs</span>
+              <div className="flex items-end justify-between">
+                <span className="text-2xl font-light font-mono text-white">4.2M</span>
+                <Activity className="w-4 h-4 text-[#404040]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: API Keys + Users */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* API Key Table */}
+          <div className="bg-[#111111] border border-[#262626] rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#262626] bg-[#0a0a0a] flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-[#f59e0b]" />
+                <h3 className="text-[11px] font-serif italic text-[#a3a3a3] uppercase tracking-widest">Active Bearer Tokens</h3>
               </div>
               <button 
                 onClick={handleGenerateKey}
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/20 transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/30 rounded hover:bg-[#f59e0b]/20 transition-colors text-[10px] font-mono uppercase tracking-wider"
               >
-                <Plus className="w-4 h-4" />
-                Generate New Key
+                <Plus className="w-3 h-3" />
+                Provision Token
               </button>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-gray-400">
-                <thead className="text-xs text-gray-500 uppercase bg-black/20 border-b border-white/5">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Key</th>
-                    <th className="px-4 py-3 font-medium">Created</th>
-                    <th className="px-4 py-3 font-medium">Last Used</th>
-                    <th className="px-4 py-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AnimatePresence>
-                    {apiKeys.map((apiKey) => (
-                      <motion.tr 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        key={apiKey.id} 
-                        className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+            
+            <div className="grid grid-cols-[1.5fr_1fr_100px_100px_80px] gap-4 p-4 text-[10px] uppercase font-mono tracking-wider text-[#737373] border-b border-[#262626] bg-[#0a0a0a]">
+              <div>Integration Endpoint</div>
+              <div>Token Hash</div>
+              <div>Issued</div>
+              <div>Last Used</div>
+              <div className="text-right">Action</div>
+            </div>
+            
+            <div className="divide-y divide-[#262626]">
+              <AnimatePresence>
+                {apiKeys.map((apiKey) => (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    key={apiKey.id} 
+                    className="grid grid-cols-[1.5fr_1fr_100px_100px_80px] gap-4 px-4 py-3 items-center hover:bg-[#1a1a1a] transition-colors"
+                  >
+                    <div className="text-sm font-medium text-[#d4d4d4] flex items-center gap-2">
+                       <span className="w-1.5 h-1.5 rounded-full bg-[#00ff00] animate-pulse" />
+                       {apiKey.name}
+                    </div>
+                    <div className="font-mono text-xs text-[#a3a3a3] tracking-widest">{apiKey.key}</div>
+                    <div className="font-mono text-xs text-[#737373]">{apiKey.createdAt}</div>
+                    <div className="font-mono text-xs text-[#737373]">{apiKey.lastUsed}</div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => handleCopy(apiKey.id)}
+                        className="p-1.5 text-[#737373] hover:text-white rounded transition-colors"
+                        title="Copy Key"
                       >
-                        <td className="px-4 py-3 font-medium text-white">{apiKey.name}</td>
-                        <td className="px-4 py-3 font-mono text-xs">{apiKey.key}</td>
-                        <td className="px-4 py-3">{apiKey.createdAt}</td>
-                        <td className="px-4 py-3">{apiKey.lastUsed}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => handleCopy(apiKey.id)}
-                              className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
-                              title="Copy Key"
-                            >
-                              {copiedId === apiKey.id ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                            </button>
-                            <button 
-                              onClick={() => handleRevokeKey(apiKey.id)}
-                              className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                              title="Revoke Key"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                  {apiKeys.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                        No API keys found. Generate one to get started.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        {copiedId === apiKey.id ? <Check className="w-4 h-4 text-[#00ff00]" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                      <button 
+                        onClick={() => handleRevokeKey(apiKey.id)}
+                        className="p-1.5 text-[#737373] hover:text-[#ff003c] rounded transition-colors"
+                        title="Revoke Key"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              {apiKeys.length === 0 && (
+                <div className="p-8 text-center border-[#262626]">
+                  <div className="text-[#a3a3a3] font-mono text-xs">No active access tokens mapped. System isolation enforced.</div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="space-y-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-yellow-400" />
-              Security Alerts
-            </h2>
-            <div className="space-y-4">
-              <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                <p className="text-sm text-yellow-200">2 failed login attempts from IP 192.168.1.45</p>
-                <p className="text-xs text-yellow-500/70 mt-1">10 mins ago</p>
-              </div>
-              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
-                <p className="text-sm text-gray-300">New device logged in for User: Analyst_01</p>
-                <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
+          {/* User Roles & Permissions Placeholder */}
+           <div className="bg-[#111111] border border-[#262626] rounded-xl overflow-hidden">
+             <div className="p-4 border-b border-[#262626] bg-[#0a0a0a] flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#737373]" />
+                <h3 className="text-[11px] font-serif italic text-[#a3a3a3] uppercase tracking-widest">Policy Directory Map</h3>
               </div>
             </div>
-          </div>
+             <div className="p-6 flex items-center justify-center min-h-[160px] bg-[url('/assets/grid-pattern.png')] bg-center border-[#262626]">
+                <div className="text-center font-mono opacity-50">
+                    <Eye className="w-8 h-8 text-[#737373] mx-auto mb-2" />
+                    <span className="text-xs uppercase tracking-widest text-[#a3a3a3]">RBAC Visualization Interface Loaded</span>
+                </div>
+             </div>
+           </div>
+
         </div>
       </div>
     </div>

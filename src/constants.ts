@@ -24,101 +24,38 @@ import {
 
 export const MODULES = [
   {
-    id: 'auth',
-    title: 'User Registration & Auth',
-    icon: UserPlus,
-    description: 'Secure registration and authentication.',
-    path: '/auth'
-  },
-  {
     id: 'dashboard',
-    title: 'Dashboard',
+    title: 'Mission Control',
     icon: LayoutDashboard,
     description: 'Role-based overview and metrics.',
     path: '/'
   },
   {
     id: 'data-source',
-    title: 'Data Source Integration',
-    icon: Link,
-    description: 'Connect to financial systems.',
+    title: 'Data Hub',
+    icon: Database,
+    description: 'Unified ingestion & connection pooling.',
     path: '/data-source'
   },
   {
-    id: 'interoperability',
-    title: 'Interoperability Standards',
-    icon: Network,
-    description: 'Manage data standards and mapping.',
-    path: '/interoperability'
-  },
-  {
-    id: 'transformation',
-    title: 'Data Integration & Transform',
-    icon: GitMerge,
-    description: 'ETL/ELT pipelines and processing.',
-    path: '/transformation'
-  },
-  {
     id: 'customer-data',
-    title: 'Unified Customer Data',
+    title: 'Unified Customer 360°',
     icon: UserCircle,
-    description: 'Customer 360° view and identity resolution.',
+    description: 'Identity resolution and aggregation.',
     path: '/customer-data'
-  },
-  {
-    id: 'ai-decision',
-    title: 'AI Decision Support',
-    icon: BrainCircuit,
-    description: 'AI model management and inference.',
-    path: '/ai-decision'
-  },
-  {
-    id: 'credit-risk',
-    title: 'Credit Risk Analytics',
-    icon: TrendingUp,
-    description: 'Borrower and portfolio risk scoring.',
-    path: '/credit-risk'
   },
   {
     id: 'fraud-detection',
     title: 'Fraud Detection',
     icon: ShieldAlert,
-    description: 'Real-time transaction monitoring.',
+    description: 'Spatial threat mapping & ledger.',
     path: '/fraud-detection'
   },
   {
-    id: 'financial-inclusion',
-    title: 'Financial Inclusion',
-    icon: Globe,
-    description: 'Access and demographic analytics.',
-    path: '/financial-inclusion'
-  },
-  {
-    id: 'regulatory-compliance',
-    title: 'Regulatory Compliance',
-    icon: Scale,
-    description: 'Reporting and compliance monitoring.',
-    path: '/regulatory-compliance'
-  },
-  {
-    id: 'data-governance',
-    title: 'Data Governance & Quality',
-    icon: DatabaseZap,
-    description: 'Data lineage and quality metrics.',
-    path: '/data-governance'
-  },
-  {
-    id: 'reporting',
-    title: 'Reporting & Analytics',
-    icon: FileText,
-    description: 'Custom reports and executive summaries.',
-    path: '/reporting'
-  },
-  {
     id: 'security-management',
-    title: 'User & Security Management',
+    title: 'User & Security',
     icon: Lock,
-    description: 'Role assignment and access control.',
+    description: 'API keys & access control.',
     path: '/security-management'
   }
 ];
