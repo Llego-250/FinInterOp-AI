@@ -11,6 +11,12 @@ interface GraphNode {
   name: string;
   color?: string;
   img?: string;
+  x?: number;
+  y?: number;
+  z?: number;
+  fx?: number;
+  fy?: number;
+  fz?: number;
 }
 
 interface GraphLink {
@@ -26,7 +32,7 @@ interface GraphData {
 
 export function TransactionFlowGraph() {
   const fgRef = useRef<any>();
-  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isAutoRotating, setIsAutoRotating] = useState(true);
   const angleRef = useRef(0);
@@ -34,13 +40,13 @@ export function TransactionFlowGraph() {
   // Generate mock data for the financial ecosystem
   const data: GraphData = useMemo(() => {
     const nodes: GraphNode[] = [
-      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: '/assets/logo-dark-1.png' }, // Gold
-      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: '/assets/images.png' }, // Cyan
+      { id: 'central_bank', group: 1, val: 20, name: 'Central Bank', color: '#ffd700', img: '/assets/logo-dark-1.png' },
+      { id: 'bank_kigali', group: 2, val: 10, name: 'Bank of Kigali', color: '#00f0ff', img: '/assets/images.png' },
       { id: 'equity_bank', group: 2, val: 10, name: 'Equity Bank', color: '#00f0ff', img: '/assets/download.jpg' },
       { id: 'im_bank', group: 2, val: 10, name: 'I&M Bank', color: '#00f0ff', img: '/assets/im-logo.png' },
-      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: '/assets/new-mtn-logo.jpg' }, // Purple
+      { id: 'mtn_momo', group: 3, val: 15, name: 'MTN MoMo', color: '#7000ff', img: '/assets/new-mtn-logo.jpg' },
       { id: 'airtel_money', group: 3, val: 12, name: 'Airtel Money', color: '#7000ff', img: '/assets/airtel.png' },
-      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c', img: '/assets/logo-dark.98ecfedb2da063a40260.webp' }, // Red
+      { id: 'rswitch', group: 4, val: 8, name: 'RSwitch', color: '#ff003c', img: '/assets/logo-dark.98ecfedb2da063a40260.webp' },
       { id: 'visa_gateway', group: 4, val: 8, name: 'Visa Gateway', color: '#ff003c', img: '/assets/download.png' },
     ];
 
@@ -63,20 +69,22 @@ export function TransactionFlowGraph() {
 
   // Handle resize
   useEffect(() => {
-    if (!containerRef) return;
+    if (!containerRef.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
-        setDimensions({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        });
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          setDimensions({
+            width: entry.contentRect.width,
+            height: entry.contentRect.height
+          });
+        }
       }
     });
 
-    resizeObserver.observe(containerRef);
+    resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
-  }, [containerRef]);
+  }, []);
 
   // Auto-rotate camera
   useEffect(() => {
@@ -84,22 +92,20 @@ export function TransactionFlowGraph() {
     if (!fg || !isAutoRotating) return;
 
     const interval = setInterval(() => {
-      // Check if fg is still valid
-      if (!fg) return;
-      
       try {
+        if (!fg || typeof fg.cameraPosition !== 'function') return;
         const currentPos = fg.cameraPosition();
-        if (!currentPos || typeof currentPos.x === 'undefined') return;
+        if (!currentPos || currentPos.x === undefined || currentPos.y === undefined || currentPos.z === undefined) return;
 
         angleRef.current += 0.003;
-        const dist = 200;
+        const dist = 300; // slightly zoomed out for better view of nodes
         fg.cameraPosition({
           x: dist * Math.sin(angleRef.current),
           y: currentPos.y,
           z: dist * Math.cos(angleRef.current)
         });
       } catch (e) {
-        console.warn("Camera position error:", e);
+        // Suppress benign camera errors during scene setup/teardown
       }
     }, 30);
 
@@ -110,52 +116,50 @@ export function TransactionFlowGraph() {
     setIsAutoRotating(false);
     const fg = fgRef.current;
     if (!fg) return;
-    const currentPos = fg.cameraPosition();
-    if (!currentPos || typeof currentPos.x === 'undefined') return;
-    
-    fg.cameraPosition(
-      { x: currentPos.x * 0.8, y: currentPos.y * 0.8, z: currentPos.z * 0.8 },
-      { x: 0, y: 0, z: 0 },
-      1000
-    );
+    try {
+      const currentPos = fg.cameraPosition();
+      if (!currentPos || currentPos.x === undefined) return;
+      
+      fg.cameraPosition(
+        { x: currentPos.x * 0.8, y: currentPos.y * 0.8, z: currentPos.z * 0.8 },
+        { x: 0, y: 0, z: 0 },
+        1000
+      );
+    } catch(e) {}
   }, []);
 
   const handleZoomOut = useCallback(() => {
     setIsAutoRotating(false);
     const fg = fgRef.current;
     if (!fg) return;
-    const currentPos = fg.cameraPosition();
-    if (!currentPos || typeof currentPos.x === 'undefined') return;
+    try {
+      const currentPos = fg.cameraPosition();
+      if (!currentPos || currentPos.x === undefined) return;
 
-    fg.cameraPosition(
-      { x: currentPos.x * 1.2, y: currentPos.y * 1.2, z: currentPos.z * 1.2 },
-      { x: 0, y: 0, z: 0 },
-      1000
-    );
+      fg.cameraPosition(
+        { x: currentPos.x * 1.2, y: currentPos.y * 1.2, z: currentPos.z * 1.2 },
+        { x: 0, y: 0, z: 0 },
+        1000
+      );
+    } catch(e) {}
   }, []);
 
   const handleReset = useCallback(() => {
     const fg = fgRef.current;
     if (!fg) return;
-    fg.zoomToFit(1000, 50);
-    setIsAutoRotating(true);
+    try {
+      fg.zoomToFit(1000, 50);
+      setIsAutoRotating(true);
+    } catch(e) {}
   }, []);
 
   return (
     <div 
-      ref={setContainerRef} 
-      className="w-full h-[500px] bg-black/40 border border-white/10 rounded-xl overflow-hidden relative group"
+      ref={containerRef} 
+      className="w-full h-full relative group"
       onMouseDown={() => setIsAutoRotating(false)}
       onTouchStart={() => setIsAutoRotating(false)}
     >
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"/>
-          Live Transaction Flow
-        </h3>
-        <p className="text-xs text-gray-400">Real-time inter-bank settlements</p>
-      </div>
-
       {/* Controls */}
       <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button 
@@ -188,144 +192,153 @@ export function TransactionFlowGraph() {
         </button>
       </div>
 
-      <ForceGraph3D
-        ref={fgRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        graphData={data}
-        nodeLabel="name"
-        nodeColor="color"
-        nodeVal="val"
-        
-        // Link styling
-        linkDirectionalParticles={4}
-        linkDirectionalParticleSpeed={(d: any) => d && d.value ? d.value * 0.001 : 0.001}
-        linkDirectionalParticleWidth={2}
-        linkDirectionalParticleColor={() => '#ffffff'}
-        linkColor={() => 'rgba(255,255,255,0.2)'}
-        linkWidth={1}
-        
-        // Node styling
-        nodeThreeObject={(node: any) => {
-          if (!node) return new THREE.Object3D();
-          const group = new THREE.Group();
+      {(dimensions.width > 0 && dimensions.height > 0) && (
+        <ForceGraph3D
+          ref={fgRef}
+          width={dimensions.width}
+          height={dimensions.height}
+          graphData={data}
+          nodeLabel="name"
+          nodeColor="color"
+          nodeVal="val"
           
-          const color = node.color || '#ffffff';
-          const scale = (node.val || 10) * 0.2;
-
-          // Materials - using Lambert with emissive so they are visible even in low light
-          const buildingMaterial = new THREE.MeshLambertMaterial({ 
-            color: color,
-            emissive: color,
-            emissiveIntensity: 0.4,
-            transparent: true,
-            opacity: 0.9
-          });
-
-          const whiteMaterial = new THREE.MeshLambertMaterial({
-            color: 0xffffff,
-            emissive: 0xffffff,
-            emissiveIntensity: 0.4,
-            transparent: true,
-            opacity: 0.95
-          });
-
-          // 1. Base (Steps)
-          const baseGeom1 = new THREE.BoxGeometry(14 * scale, 1 * scale, 12 * scale);
-          const base1 = new THREE.Mesh(baseGeom1, buildingMaterial);
-          base1.position.y = -4.5 * scale;
-          group.add(base1);
-
-          const baseGeom2 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
-          const base2 = new THREE.Mesh(baseGeom2, whiteMaterial);
-          base2.position.y = -3.5 * scale;
-          group.add(base2);
-
-          // 2. Main Building Body (Core)
-          const bodyGeom = new THREE.BoxGeometry(8 * scale, 6 * scale, 6 * scale);
-          const body = new THREE.Mesh(bodyGeom, buildingMaterial);
-          body.position.y = 0;
-          group.add(body);
-
-          // 3. Pillars
-          const pillarGeom = new THREE.CylinderGeometry(0.6 * scale, 0.6 * scale, 6 * scale, 16);
-          const pillarPositions = [
-            [-4.5, 0, 3.5], [0, 0, 3.5], [4.5, 0, 3.5], // Front
-            [-4.5, 0, -3.5], [0, 0, -3.5], [4.5, 0, -3.5], // Back
-            [-4.5, 0, 0], [4.5, 0, 0] // Sides
-          ];
+          // Link styling
+          linkDirectionalParticles={undefined} // Disabling particles directly if they cause the 'x' issue, we can rely on standard links
+          linkColor={() => 'rgba(255,255,255,0.4)'}
+          linkWidth={1.5}
           
-          pillarPositions.forEach(pos => {
-            const pillar = new THREE.Mesh(pillarGeom, whiteMaterial);
-            pillar.position.set(pos[0] * scale, pos[1] * scale, pos[2] * scale);
-            group.add(pillar);
-          });
-
-          // 4. Roof
-          const roofGeom1 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
-          const roof1 = new THREE.Mesh(roofGeom1, whiteMaterial);
-          roof1.position.y = 3.5 * scale;
-          group.add(roof1);
-
-          const roofGeom2 = new THREE.BoxGeometry(14 * scale, 1.5 * scale, 12 * scale);
-          const roof2 = new THREE.Mesh(roofGeom2, buildingMaterial);
-          roof2.position.y = 4.75 * scale;
-          group.add(roof2);
-
-          // 5. Logo / Signage
-          if (node.img) {
-            const imgTexture = new THREE.TextureLoader().load(node.img);
-            imgTexture.colorSpace = THREE.SRGBColorSpace;
+          // Node styling
+          nodeThreeObject={(node: any) => {
+            if (!node) return new THREE.Object3D();
+            const group = new THREE.Group();
             
-            // Create a billboard on top of the roof
-            const spriteMaterial = new THREE.SpriteMaterial({ map: imgTexture });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(8 * scale, 8 * scale, 1);
-            sprite.position.y = 10 * scale; // Above the roof
-            group.add(sprite);
+            const color = node.color || '#ffffff';
+            const scale = (node.val || 10) * 0.15;
 
-            // Add a white backing for the logo so it pops
-            const backingGeom = new THREE.BoxGeometry(8.5 * scale, 8.5 * scale, 0.5 * scale);
-            const backingMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const backing = new THREE.Mesh(backingGeom, backingMat);
-            backing.position.y = 10 * scale;
-            backing.position.z = -0.1 * scale;
-            group.add(backing);
-          } else {
-            // Fallback if no image
-            const sphereGeom = new THREE.SphereGeometry(4 * scale, 32, 32);
-            const sphereMat = new THREE.MeshBasicMaterial({ color: color });
-            const sphere = new THREE.Mesh(sphereGeom, sphereMat);
-            sphere.position.y = 10 * scale;
-            group.add(sphere);
-          }
+            // Materials - using Lambert with emissive so they are visible safely
+            const buildingMaterial = new THREE.MeshLambertMaterial({ 
+              color: color,
+              emissive: color,
+              emissiveIntensity: 0.4,
+              transparent: true,
+              opacity: 0.8
+            });
 
-          // 6. Glow effect (outer sphere)
-          const glowGeometry = new THREE.SphereGeometry(16 * scale, 32, 32);
-          const glowMaterial = new THREE.MeshBasicMaterial({
-            color: color,
-            transparent: true,
-            opacity: 0.1,
-            side: THREE.BackSide,
-            blending: THREE.AdditiveBlending
-          });
-          const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-          group.add(glow);
+            const whiteMaterial = new THREE.MeshLambertMaterial({
+              color: 0xffffff,
+              emissive: 0xffffff,
+              emissiveIntensity: 0.3,
+              transparent: true,
+              opacity: 0.9
+            });
 
-          return group;
-        }}
-        
-        backgroundColor="rgba(0,0,0,0)"
-        showNavInfo={false}
-        onNodeDragEnd={node => {
-          if (node) {
-            node.fx = node.x;
-            node.fy = node.y;
-            node.fz = node.z;
-          }
-        }}
-        controlType="orbit"
-      />
+            // 1. Base (Steps)
+            const baseGeom1 = new THREE.BoxGeometry(14 * scale, 1 * scale, 12 * scale);
+            const base1 = new THREE.Mesh(baseGeom1, buildingMaterial);
+            base1.position.y = -4.5 * scale;
+            group.add(base1);
+
+            const baseGeom2 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
+            const base2 = new THREE.Mesh(baseGeom2, whiteMaterial);
+            base2.position.y = -3.5 * scale;
+            group.add(base2);
+
+            // 2. Main Building Body (Core)
+            const bodyGeom = new THREE.BoxGeometry(8 * scale, 6 * scale, 6 * scale);
+            const body = new THREE.Mesh(bodyGeom, buildingMaterial);
+            body.position.y = 0;
+            group.add(body);
+
+            // 3. Pillars
+            const pillarGeom = new THREE.CylinderGeometry(0.6 * scale, 0.6 * scale, 6 * scale, 16);
+            const pillarPositions = [
+              [-4.5, 0, 3.5], [0, 0, 3.5], [4.5, 0, 3.5], // Front
+              [-4.5, 0, -3.5], [0, 0, -3.5], [4.5, 0, -3.5], // Back
+              [-4.5, 0, 0], [4.5, 0, 0] // Sides
+            ];
+            
+            pillarPositions.forEach(pos => {
+              const pillar = new THREE.Mesh(pillarGeom, whiteMaterial);
+              pillar.position.set(pos[0] * scale, pos[1] * scale, pos[2] * scale);
+              group.add(pillar);
+            });
+
+            // 4. Roof
+            const roofGeom1 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
+            const roof1 = new THREE.Mesh(roofGeom1, whiteMaterial);
+            roof1.position.y = 3.5 * scale;
+            group.add(roof1);
+
+            const roofGeom2 = new THREE.BoxGeometry(14 * scale, 1.5 * scale, 12 * scale);
+            const roof2 = new THREE.Mesh(roofGeom2, buildingMaterial);
+            roof2.position.y = 4.75 * scale;
+            group.add(roof2);
+
+            // 5. Logo / Signage
+            if (node.img) {
+              try {
+                const imgTexture = new THREE.TextureLoader().load(node.img);
+                if ('colorSpace' in imgTexture) {
+                  (imgTexture as any).colorSpace = THREE.SRGBColorSpace;
+                }
+                
+                // billboard on top of the roof
+                const spriteMaterial = new THREE.SpriteMaterial({ map: imgTexture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.scale.set(8 * scale, 8 * scale, 1);
+                sprite.position.y = 10 * scale; 
+                group.add(sprite);
+
+                // white backing
+                const backingGeom = new THREE.BoxGeometry(8.5 * scale, 8.5 * scale, 0.5 * scale);
+                const backingMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const backing = new THREE.Mesh(backingGeom, backingMat);
+                backing.position.y = 10 * scale;
+                backing.position.z = -0.1 * scale;
+                group.add(backing);
+              } catch (err) {
+                 // graceful fail
+                 const sphereGeom = new THREE.SphereGeometry(4 * scale, 16, 16);
+                 const sphereMat = new THREE.MeshBasicMaterial({ color: color });
+                 const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+                 sphere.position.y = 10 * scale;
+                 group.add(sphere);
+              }
+            } else {
+              const sphereGeom = new THREE.SphereGeometry(4 * scale, 16, 16);
+              const sphereMat = new THREE.MeshBasicMaterial({ color: color });
+              const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+              sphere.position.y = 10 * scale;
+              group.add(sphere);
+            }
+
+            // 6. Glow effect
+            const glowGeometry = new THREE.SphereGeometry(14 * scale, 16, 16);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+              color: color,
+              transparent: true,
+              opacity: 0.15,
+              side: THREE.BackSide,
+              blending: THREE.AdditiveBlending
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            group.add(glow);
+
+            return group;
+          }}
+          
+          backgroundColor="rgba(0,0,0,0)"
+          showNavInfo={false}
+          onNodeDragEnd={node => {
+            if (node && typeof node.x === 'number' && typeof node.y === 'number' && typeof node.z === 'number') {
+              node.fx = node.x;
+              node.fy = node.y;
+              node.fz = node.z;
+            }
+          }}
+          controlType="orbit"
+        />
+      )}
     </div>
   );
 }
