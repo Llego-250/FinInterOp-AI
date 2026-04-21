@@ -30,6 +30,51 @@ interface GraphData {
   links: GraphLink[];
 }
 
+// Generate realistic dynamic text plates for the buildings
+const textureCache = new Map<string, THREE.CanvasTexture>();
+
+function getBankNameTexture(name: string, color: string): THREE.CanvasTexture | null {
+  const key = `${name}-${color}`;
+  if (textureCache.has(key)) return textureCache.get(key)!;
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  // Obsidian dark plate background
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Futuristic glowing neon rim
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 16;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+  // Text setup
+  ctx.font = 'bold 96px "Inter", "Arial", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Neon glow on text
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = '#ffffff';
+
+  ctx.fillText(name.toUpperCase(), canvas.width / 2, canvas.height / 2 + 8);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
+  
+  if ('colorSpace' in texture) {
+    (texture as any).colorSpace = THREE.SRGBColorSpace;
+  }
+
+  textureCache.set(key, texture);
+  return texture;
+}
+
 export function TransactionFlowGraph() {
   const fgRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,14 +143,16 @@ export function TransactionFlowGraph() {
         if (!currentPos || currentPos.x === undefined || currentPos.y === undefined || currentPos.z === undefined) return;
 
         angleRef.current += 0.003;
-        const dist = 300; // slightly zoomed out for better view of nodes
-        fg.cameraPosition({
-          x: dist * Math.sin(angleRef.current),
-          y: currentPos.y,
-          z: dist * Math.cos(angleRef.current)
-        });
+        const dist = 300; 
+        fg.cameraPosition(
+          {
+            x: dist * Math.sin(angleRef.current),
+            y: currentPos.y,
+            z: dist * Math.cos(angleRef.current)
+          },
+          { x: 0, y: 0, z: 0 } 
+        );
       } catch (e) {
-        // Suppress benign camera errors during scene setup/teardown
       }
     }, 30);
 
@@ -203,126 +250,143 @@ export function TransactionFlowGraph() {
           nodeVal="val"
           
           // Link styling
-          linkDirectionalParticles={undefined} // Disabling particles directly if they cause the 'x' issue, we can rely on standard links
           linkColor={() => 'rgba(255,255,255,0.4)'}
           linkWidth={1.5}
           
-          // Node styling
+          // Node styling - The Realistic Bank architecture
           nodeThreeObject={(node: any) => {
             if (!node) return new THREE.Object3D();
             const group = new THREE.Group();
             
             const color = node.color || '#ffffff';
-            const scale = (node.val || 10) * 0.15;
+            const scale = (node.val || 10) * 0.18; // Dimension offset
 
-            // Materials - using Lambert with emissive so they are visible safely
-            const buildingMaterial = new THREE.MeshLambertMaterial({ 
-              color: color,
-              emissive: color,
-              emissiveIntensity: 0.4,
+            // --- PREMIUM MATERIALS ---
+            const stoneMat = new THREE.MeshPhongMaterial({
+              color: 0xe5e5e5,
+              shininess: 40,
+              flatShading: false
+            });
+
+            const darkBaseMat = new THREE.MeshPhongMaterial({
+              color: 0x111111,
+              shininess: 20
+            });
+
+            const glassMat = new THREE.MeshPhongMaterial({
+              color: 0x050505,
+              emissive: 0x1a1a1a,
+              shininess: 100,
               transparent: true,
-              opacity: 0.8
+              opacity: 0.95
             });
 
-            const whiteMaterial = new THREE.MeshLambertMaterial({
-              color: 0xffffff,
-              emissive: 0xffffff,
-              emissiveIntensity: 0.3,
-              transparent: true,
-              opacity: 0.9
-            });
+            const accentMat = new THREE.MeshBasicMaterial({ color: color });
 
-            // 1. Base (Steps)
-            const baseGeom1 = new THREE.BoxGeometry(14 * scale, 1 * scale, 12 * scale);
-            const base1 = new THREE.Mesh(baseGeom1, buildingMaterial);
-            base1.position.y = -4.5 * scale;
-            group.add(base1);
-
-            const baseGeom2 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
-            const base2 = new THREE.Mesh(baseGeom2, whiteMaterial);
-            base2.position.y = -3.5 * scale;
-            group.add(base2);
-
-            // 2. Main Building Body (Core)
-            const bodyGeom = new THREE.BoxGeometry(8 * scale, 6 * scale, 6 * scale);
-            const body = new THREE.Mesh(bodyGeom, buildingMaterial);
-            body.position.y = 0;
-            group.add(body);
-
-            // 3. Pillars
-            const pillarGeom = new THREE.CylinderGeometry(0.6 * scale, 0.6 * scale, 6 * scale, 16);
-            const pillarPositions = [
-              [-4.5, 0, 3.5], [0, 0, 3.5], [4.5, 0, 3.5], // Front
-              [-4.5, 0, -3.5], [0, 0, -3.5], [4.5, 0, -3.5], // Back
-              [-4.5, 0, 0], [4.5, 0, 0] // Sides
-            ];
-            
-            pillarPositions.forEach(pos => {
-              const pillar = new THREE.Mesh(pillarGeom, whiteMaterial);
-              pillar.position.set(pos[0] * scale, pos[1] * scale, pos[2] * scale);
-              group.add(pillar);
-            });
-
-            // 4. Roof
-            const roofGeom1 = new THREE.BoxGeometry(12 * scale, 1 * scale, 10 * scale);
-            const roof1 = new THREE.Mesh(roofGeom1, whiteMaterial);
-            roof1.position.y = 3.5 * scale;
-            group.add(roof1);
-
-            const roofGeom2 = new THREE.BoxGeometry(14 * scale, 1.5 * scale, 12 * scale);
-            const roof2 = new THREE.Mesh(roofGeom2, buildingMaterial);
-            roof2.position.y = 4.75 * scale;
-            group.add(roof2);
-
-            // 5. Logo / Signage
-            if (node.img) {
-              try {
-                const imgTexture = new THREE.TextureLoader().load(node.img);
-                if ('colorSpace' in imgTexture) {
-                  (imgTexture as any).colorSpace = THREE.SRGBColorSpace;
-                }
-                
-                // billboard on top of the roof
-                const spriteMaterial = new THREE.SpriteMaterial({ map: imgTexture });
-                const sprite = new THREE.Sprite(spriteMaterial);
-                sprite.scale.set(8 * scale, 8 * scale, 1);
-                sprite.position.y = 10 * scale; 
-                group.add(sprite);
-
-                // white backing
-                const backingGeom = new THREE.BoxGeometry(8.5 * scale, 8.5 * scale, 0.5 * scale);
-                const backingMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const backing = new THREE.Mesh(backingGeom, backingMat);
-                backing.position.y = 10 * scale;
-                backing.position.z = -0.1 * scale;
-                group.add(backing);
-              } catch (err) {
-                 // graceful fail
-                 const sphereGeom = new THREE.SphereGeometry(4 * scale, 16, 16);
-                 const sphereMat = new THREE.MeshBasicMaterial({ color: color });
-                 const sphere = new THREE.Mesh(sphereGeom, sphereMat);
-                 sphere.position.y = 10 * scale;
-                 group.add(sphere);
-              }
-            } else {
-              const sphereGeom = new THREE.SphereGeometry(4 * scale, 16, 16);
-              const sphereMat = new THREE.MeshBasicMaterial({ color: color });
-              const sphere = new THREE.Mesh(sphereGeom, sphereMat);
-              sphere.position.y = 10 * scale;
-              group.add(sphere);
+            // 1. ANCIENT/MODERN BASE STEPS
+            for(let i=0; i<3; i++) {
+              const w = (20 - i*2) * scale;
+              const h = 1.2 * scale;
+              const geom = new THREE.BoxGeometry(w, h, w * 0.85);
+              const mesh = new THREE.Mesh(geom, darkBaseMat);
+              mesh.position.y = (-6.5 + i * 1.2) * scale;
+              group.add(mesh);
             }
 
-            // 6. Glow effect
-            const glowGeometry = new THREE.SphereGeometry(14 * scale, 16, 16);
-            const glowMaterial = new THREE.MeshBasicMaterial({
+            // 2. INNER GLASS HALL
+            const hallGeom = new THREE.BoxGeometry(11 * scale, 12 * scale, 10 * scale);
+            const hall = new THREE.Mesh(hallGeom, glassMat);
+            hall.position.y = 2.5 * scale;
+            group.add(hall);
+
+            // 3. ARCHITECTURE PILLARS 
+            // Classic Bank Style Pillars
+            const pRadius = 0.8 * scale;
+            const pHeight = 12 * scale;
+            const pillarGeom = new THREE.CylinderGeometry(pRadius, pRadius, pHeight, 24);
+            
+            // Front & Back Pillars
+            const xOffsets = [-6, -3, 0, 3, 6];
+            xOffsets.forEach(x => {
+              const pFront = new THREE.Mesh(pillarGeom, stoneMat);
+              pFront.position.set(x * scale, 2.5 * scale, 7.5 * scale);
+              group.add(pFront);
+              
+              const pBack = new THREE.Mesh(pillarGeom, stoneMat);
+              pBack.position.set(x * scale, 2.5 * scale, -7.5 * scale);
+              group.add(pBack);
+            });
+            
+            // Side Pillars
+            [-4, 0, 4].forEach(z => {
+              const pLeft = new THREE.Mesh(pillarGeom, stoneMat);
+              pLeft.position.set(-7.5 * scale, 2.5 * scale, z * scale);
+              group.add(pLeft);
+
+              const pRight = new THREE.Mesh(pillarGeom, stoneMat);
+              pRight.position.set(7.5 * scale, 2.5 * scale, z * scale);
+              group.add(pRight);
+            });
+
+            // 4. UPPER FRIEZE (Signage Mount)
+            const friezeGeom = new THREE.BoxGeometry(17 * scale, 3.5 * scale, 17 * scale);
+            const frieze = new THREE.Mesh(friezeGeom, stoneMat);
+            frieze.position.y = 10 * scale;
+            group.add(frieze);
+
+            // 5. HD SIGNAGE / TEXT NAME ON WALL
+            const textTexture = getBankNameTexture(node.name, color);
+            if (textTexture) {
+               const boardGeom = new THREE.PlaneGeometry(16 * scale, 3 * scale);
+               const boardMat = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+               
+               // Front sign
+               const frontBoard = new THREE.Mesh(boardGeom, boardMat);
+               frontBoard.position.set(0, 10 * scale, 8.51 * scale);
+               group.add(frontBoard);
+               
+               // Back sign
+               const backBoard = new THREE.Mesh(boardGeom, boardMat);
+               backBoard.position.set(0, 10 * scale, -8.51 * scale);
+               backBoard.rotation.y = Math.PI;
+               group.add(backBoard);
+            }
+
+            // 6. ROOF & ILLUMINATED ACCENT RIM
+            const roofGeom = new THREE.BoxGeometry(18 * scale, 1 * scale, 18 * scale);
+            const roof = new THREE.Mesh(roofGeom, darkBaseMat);
+            roof.position.y = 12.25 * scale;
+            group.add(roof);
+
+            const rimGeom = new THREE.BoxGeometry(18.5 * scale, 0.4 * scale, 18.5 * scale);
+            const rim = new THREE.Mesh(rimGeom, accentMat);
+            rim.position.y = 12.95 * scale;
+            group.add(rim);
+
+            // 7. HOLOGRAM LOGO (Floating above the building if image exists)
+            if (node.img) {
+               try {
+                 const tex = new THREE.TextureLoader().load(node.img);
+                 if ('colorSpace' in tex) (tex as any).colorSpace = THREE.SRGBColorSpace;
+                 const spriteMat = new THREE.SpriteMaterial({ map: tex });
+                 const sprite = new THREE.Sprite(spriteMat);
+                 sprite.scale.set(7 * scale, 7 * scale, 1);
+                 sprite.position.y = 17 * scale;
+                 group.add(sprite);
+               } catch(e) {}
+            }
+
+            // 8. DATA FLOW AURA (Base plate glow)
+            const auraGeom = new THREE.CylinderGeometry(18 * scale, 18 * scale, 0.2 * scale, 32);
+            const auraMat = new THREE.MeshBasicMaterial({
               color: color,
               transparent: true,
               opacity: 0.15,
-              side: THREE.BackSide,
               blending: THREE.AdditiveBlending
             });
-            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-            group.add(glow);
+            const aura = new THREE.Mesh(auraGeom, auraMat);
+            aura.position.y = -7 * scale;
+            group.add(aura);
 
             return group;
           }}
